@@ -5,6 +5,9 @@
 [Bb]uilds/
 Assets/AssetStoreTools*
 
+# ML-Agent
+ML-Agent/
+
 # Visual Studio cache directory
 .vs/
 
