@@ -4,26 +4,40 @@ using UnityEngine;
 
 public class Agents : Agent {
 
+    // GLOBAL STUFF
     public Transform Target;
+    public GameObject Gun;
 
-    public float moveSpeed = 3;
-    //PlayerController controller;
+    public Material PlayerMaterial;
+    public Material GunFiredMaterial;
+    Material GunMaterial;
+    public Material HitMaterial;
+    Material BodyMaterial;
+    Material TargetMaterial;
+
+    public float moveSpeed = 1;
 
     Rigidbody rBody;
-    string objectName;
+    RayPerception rayPer;
 
+    string objectName;
     bool targetLocked = false;
-    string shotAgentname;
+    GameObject shotAgent;
+    bool Peng = false;
+
 
     void Start()
     {
         rBody = GetComponent<Rigidbody>();
+        rayPer = GetComponent<RayPerception>();
         objectName = gameObject.name;
+        GunMaterial = Gun.GetComponent<Renderer>().material;
+        BodyMaterial = gameObject.GetComponent<Renderer>().material;
+        TargetMaterial = Target.GetComponent<Renderer>().material;
     }
 
     private void Update()
     {
-        
         // Start + Direction
         Ray ray = new Ray(rBody.transform.position, rBody.transform.forward);
 
@@ -35,21 +49,39 @@ public class Agents : Agent {
         {
             if (Target.gameObject.name == hitInfo.collider.gameObject.name)
             {
-                Debug.DrawLine(ray.origin, hitInfo.point, Color.green);
+                if(Peng){
+                    Gun.GetComponent<Renderer>().material = GunFiredMaterial;
+                    Debug.DrawLine(ray.origin, hitInfo.point, Color.yellow);
+                }else{
+                    Gun.GetComponent<Renderer>().material = GunMaterial;
+                    Debug.DrawLine(ray.origin, hitInfo.point, Color.green);
+                }
+               
                 //print(hitInfo.collider.gameObject.name);
                 //print(Target.gameObject.name);
                 //print(hitInfo.distance);
                 targetLocked = true;
-                shotAgentname = hitInfo.collider.gameObject.name;
+                shotAgent = hitInfo.collider.gameObject;
             }
             else
             {
                 targetLocked = false;
-                Debug.DrawLine(ray.origin, ray.origin + ray.direction * 100, Color.red);
+                if (Peng)
+                {
+                    Gun.GetComponent<Renderer>().material = GunFiredMaterial;
+                    Debug.DrawLine(ray.origin, hitInfo.point, Color.yellow);
+                }
+                else
+                {
+                    Gun.GetComponent<Renderer>().material = GunMaterial;
+                    Debug.DrawLine(ray.origin, hitInfo.point, Color.red);
+                }
             }
+ 
         }
  
     }
+
 
     public override void CollectObservations()
     {
@@ -57,76 +89,108 @@ public class Agents : Agent {
         AddVectorObs(rBody.position);
 
         // Observe Distances to Walls / Ray Casts
+        float rayDistance = 20f;
+        float[] rayAngles = { 0f, 45f, 90f, 135f, 180f, 110f, 70f };
+        string[] detectableObjects;
+        detectableObjects = new string[] { "ArenaWall", "PlayerTarget"};
+        AddVectorObs(rayPer.Perceive(rayDistance, rayAngles, detectableObjects, 0f, 0f));
+        AddVectorObs(rayPer.Perceive(rayDistance, rayAngles, detectableObjects, 1f, 0f));
 
 
     }
 
+
+    public void MoveAgent(float[] act)
+    {
+        Vector3 dirToGo = Vector3.zero;
+        Vector3 rotateDir = Vector3.zero;
+
+        int action = Mathf.FloorToInt(act[0]);
+        Peng = false;
+        switch (action)
+        {
+            case 0:
+                dirToGo = transform.forward * 1f;
+                break;
+            case 1:
+                dirToGo = transform.forward * -1f;
+                break;
+            case 2:
+                rotateDir = transform.up * 1f;
+                break;
+            case 3:
+                rotateDir = transform.up * -1f;
+                break;
+            case 4:
+                dirToGo = transform.right * -0.75f;
+                break;
+            case 5:
+                dirToGo = transform.right * 0.75f;
+                break;
+            case 6:
+                print("Shoooting from:");
+                print(gameObject.name);
+                // SHOT!
+                Peng = true;
+                if (targetLocked)
+                {
+                    shotAgent.GetComponent<Renderer>().material = HitMaterial;
+                    //print("Shot Agent:");
+                    //print(shotAgent.name);
+                    //print("Winner:");
+                    //print(gameObject.name);
+                    Done();
+                }
+                break;
+            case 7:
+                break;
+        }
+
+        transform.Rotate(rotateDir, Time.deltaTime * 100f);
+        rBody.AddForce(dirToGo * moveSpeed,ForceMode.VelocityChange);
+    } 
+
+
     public override void AgentAction(float[] vectorAction, string textAction)
     {
-        // Actions
-        //if(vectorAction[0] == 1)
-        //{
-        //    print("Up!");
-        //}
+        // Object myReward
+        // Monitor.Log("Reward", , MonitorType.text , transform);
+        //Agent.GetCumulativeReward();
+        //print(Agent.GetReward());
 
-        //if (vectorAction[1] == 1)
-        //{
-        //    print("Left!");
-        //}
+        MoveAgent(vectorAction);
 
-        //if (vectorAction[2] == 1)
-        //{
-        //    print("Down!");
-        //}
-
-        //if (vectorAction[3] == 1)
-        //{
-        //    print("Right!");
-        //}
-
-        // Shooting
-        if (vectorAction[4] == 1)
-        {
-            
-            // SHOT!
-            if(targetLocked)
-            {
-                //print(objectName);
-                //print(shotAgent);
-                if(objectName == shotAgentname){
-                    AddReward(1.0f);
-                }else{
-                    print("Winner:");
-                    print(shotAgentname);
-                    AddReward(-1.0f);
-                }
-                Done();
-
-            }
+        if (Peng && targetLocked){
+            AddReward(1.0f);
         }
 
-        // Reward for Finding
         if (targetLocked)
         {
-            AddReward(0.1f);
+            AddReward(0.5f);
         }
 
-        // Movement
-        if(objectName == "Agent01"){
-            // Alternate Way of Movement Control
-            Vector3 moveInput = new Vector3(Input.GetAxis("Horizontal_P1"), 0, Input.GetAxis("Vertical_P1"));
-            Vector3 moveVelocity = moveInput.normalized * moveSpeed;
-            rBody.MovePosition(rBody.position + moveVelocity * Time.fixedDeltaTime); 
-        }else{
-            // Alternate Way of Movement Control
-            Vector3 moveInput2 = new Vector3(Input.GetAxis("Horizontal_P2"), 0, Input.GetAxis("Vertical_P2"));
-            Vector3 moveVelocity2 = moveInput2.normalized * moveSpeed;
-            rBody.MovePosition(rBody.position + moveVelocity2 * Time.fixedDeltaTime);   
+        if (Peng)
+        {
+            AddReward(-0.01f);
         }
 
+        // Time Penalty
+        AddReward(-0.01f);
+
+    }
 
 
 
+    public override void AgentReset(){
+        
+        rBody.position = new Vector3(Random.value * 8 - 4,
+                                          0.5f,
+                                          Random.value * 8 - 4);
+        Target.position = new Vector3(Random.value * 8 - 4,
+                                          0.5f,
+                                          Random.value * 8 - 4);
+        gameObject.GetComponent<Renderer>().material = PlayerMaterial;
+        Target.GetComponent<Renderer>().material = TargetMaterial;
     }
 
 }
