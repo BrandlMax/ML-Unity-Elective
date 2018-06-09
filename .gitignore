@@ -9,7 +9,7 @@ Assets/AssetStoreTools*
 ML-Agents/
 
 #Builds 
-env/
+build_env/
 
 ML-Agents.meta
 
