@@ -8,6 +8,9 @@ Assets/AssetStoreTools*
 # ML-Agent
 ML-Agents/
 
+#Builds 
+env/
+
 ML-Agents.meta
 
 # Visual Studio cache directory
