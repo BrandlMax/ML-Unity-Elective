@@ -84,11 +84,12 @@ public class Agents : Agent {
 
 
     public override void CollectObservations()
+
     {
-        // Observations
+        // Observation current position
         AddVectorObs(rBody.position);
 
-        // Observe Distances to Walls / Ray Casts
+        // Observe Distances to Walls & Tagets via Ray Casts
         float rayDistance = 20f;
         float[] rayAngles = { 0f, 45f, 90f, 135f, 180f, 110f, 70f };
         string[] detectableObjects;
@@ -96,10 +97,13 @@ public class Agents : Agent {
         AddVectorObs(rayPer.Perceive(rayDistance, rayAngles, detectableObjects, 0f, 0f));
         AddVectorObs(rayPer.Perceive(rayDistance, rayAngles, detectableObjects, 1f, 0f));
 
-        // ToDo: VectorObs from Distance or Target Position?
-        // Vector3 relativePosition = Target.position - this.transform.position;
+        // Observe Distance to Target
+        Vector3 relativePosition = Target.position - this.transform.position;
+        AddVectorObs(relativePosition.x);
+        AddVectorObs(relativePosition.z);
 
-
+        // Observe Target Position
+        AddVectorObs(Target.position);
 
     }
 
@@ -159,23 +163,30 @@ public class Agents : Agent {
     {
         // Object myReward
         // Monitor.Log("Reward", , MonitorType.text , transform);
-        //Agent.GetCumulativeReward();
-        //print(Agent.GetReward());
+        // Agent.GetCumulativeReward();
+        // print(Agent.GetReward());
 
         MoveAgent(vectorAction);
 
+        // Reward for shooting the target
         if (Peng && targetLocked){
             AddReward(1.0f);
         }
 
+        // Reward for finding Target
         if (targetLocked)
         {
             AddReward(0.5f);
         }
 
+        // Penalty for every shot
         if (Peng)
         {
             AddReward(-0.01f);
+        }
+
+        if(gameObject.GetComponent<Renderer>().material == HitMaterial){
+            AddReward(-1.0f);
         }
 
         // Time Penalty
