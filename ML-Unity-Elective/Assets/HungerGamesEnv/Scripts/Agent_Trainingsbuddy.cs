@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Agents02 : Agent {
+public class Agent_Trainingsbuddy : Agent {
 
     // GLOBAL STUFF
     public Transform Target;

@@ -96,6 +96,10 @@ public class Agents : Agent {
         AddVectorObs(rayPer.Perceive(rayDistance, rayAngles, detectableObjects, 0f, 0f));
         AddVectorObs(rayPer.Perceive(rayDistance, rayAngles, detectableObjects, 1f, 0f));
 
+        // ToDo: VectorObs from Distance or Target Position?
+        // Vector3 relativePosition = Target.position - this.transform.position;
+
+
 
     }
 
