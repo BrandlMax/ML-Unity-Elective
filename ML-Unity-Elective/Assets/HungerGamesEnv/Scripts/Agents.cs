@@ -23,6 +23,7 @@ public class Agents : Agent {
     string objectName;
     bool targetLocked = false;
     GameObject shotAgent;
+    Component shotAgentComp;
     bool Peng = false;
 
 
@@ -86,14 +87,16 @@ public class Agents : Agent {
     public override void CollectObservations()
 
     {
+        
         // Observation current position
         AddVectorObs(rBody.position);
+        AddVectorObs(rBody.transform.rotation);
 
         // Observe Distances to Walls & Tagets via Ray Casts
         float rayDistance = 20f;
         float[] rayAngles = { 0f, 45f, 90f, 135f, 180f, 110f, 70f };
         string[] detectableObjects;
-        detectableObjects = new string[] { "ArenaWall", "PlayerTarget"};
+        detectableObjects = new string[] { "ArenaWall", "PlayerTarget" };
         AddVectorObs(rayPer.Perceive(rayDistance, rayAngles, detectableObjects, 0f, 0f));
         AddVectorObs(rayPer.Perceive(rayDistance, rayAngles, detectableObjects, 1f, 0f));
 
@@ -104,6 +107,7 @@ public class Agents : Agent {
 
         // Observe Target Position
         AddVectorObs(Target.position);
+        AddVectorObs(Target.transform.rotation);
 
     }
 
@@ -136,8 +140,8 @@ public class Agents : Agent {
                 dirToGo = transform.right * 0.75f;
                 break;
             case 6:
-                print("Shoooting from:");
-                print(gameObject.name);
+                //print("Shoooting from:");
+                //print(gameObject.name);
                 // SHOT!
                 Peng = true;
                 if (targetLocked)
@@ -147,7 +151,7 @@ public class Agents : Agent {
                     //print(shotAgent.name);
                     //print("Winner:");
                     //print(gameObject.name);
-                    Done();
+                    //Done();
                 }
                 break;
             case 7:
@@ -161,22 +165,25 @@ public class Agents : Agent {
 
     public override void AgentAction(float[] vectorAction, string textAction)
     {
-        // Object myReward
-        // Monitor.Log("Reward", , MonitorType.text , transform);
-        // Agent.GetCumulativeReward();
-        // print(Agent.GetReward());
+
+        // Monitoring
+        Monitor.Log("Reward", GetCumulativeReward(), MonitorType.text, this.transform);
+        // print(GetReward());
+        // print(GetCumulativeReward());
+
 
         MoveAgent(vectorAction);
 
         // Reward for shooting the target
         if (Peng && targetLocked){
-            AddReward(1.0f);
+            AddReward(100.0f);
+            Done();
         }
 
         // Reward for finding Target
         if (targetLocked)
         {
-            AddReward(0.5f);
+            AddReward(0.01f);
         }
 
         // Penalty for every shot
@@ -185,12 +192,19 @@ public class Agents : Agent {
             AddReward(-0.01f);
         }
 
-        if(gameObject.GetComponent<Renderer>().material == HitMaterial){
-            AddReward(-1.0f);
+        // When the Agent get hit
+        if(this.GetComponent<Renderer>().material.name == "Hit (Instance)"){
+            AddReward(-100.0f);
+            Done();
         }
 
         // Time Penalty
         AddReward(-0.01f);
+
+        // EndTime Penalty
+        // if(GetStepCount() == 5000){
+        //   AddReward(-100.0f);
+        // };
 
     }
 
