@@ -93,12 +93,12 @@ public class Agents : Agent {
         AddVectorObs(rBody.transform.rotation);
 
         // Observe Distances to Walls & Tagets via Ray Casts
-        float rayDistance = 20f;
-        float[] rayAngles = { 0f, 45f, 90f, 135f, 180f, 110f, 70f };
-        string[] detectableObjects;
-        detectableObjects = new string[] { "ArenaWall", "PlayerTarget" };
-        AddVectorObs(rayPer.Perceive(rayDistance, rayAngles, detectableObjects, 0f, 0f));
-        AddVectorObs(rayPer.Perceive(rayDistance, rayAngles, detectableObjects, 1f, 0f));
+        //float rayDistance = 20f;
+        //float[] rayAngles = { 0f, 45f, 90f, 135f, 180f, 110f, 70f };
+        //string[] detectableObjects;
+        //detectableObjects = new string[] { "ArenaWall", "PlayerTarget" };
+        //AddVectorObs(rayPer.Perceive(rayDistance, rayAngles, detectableObjects, 0f, 0f));
+        //AddVectorObs(rayPer.Perceive(rayDistance, rayAngles, detectableObjects, 1f, 0f));
 
         // Observe Distance to Target
         Vector3 relativePosition = Target.position - this.transform.position;
