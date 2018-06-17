@@ -26,7 +26,6 @@ public class Trainingsbuddy_Agents : Agent
     GameObject shotAgent;
     bool Peng = false;
 
-
     void Start()
     {
         rBody = GetComponent<Rigidbody>();
@@ -92,6 +91,7 @@ public class Trainingsbuddy_Agents : Agent
     {
         // Observation current position
         AddVectorObs(rBody.position);
+        AddVectorObs(rBody.transform.rotation);
 
         // Observe Distances to Walls & Tagets via Ray Casts
         float rayDistance = 20f;
@@ -108,6 +108,7 @@ public class Trainingsbuddy_Agents : Agent
 
         // Observe Target Position
         AddVectorObs(Target.position);
+        AddVectorObs(Target.transform.rotation);
 
     }
 
@@ -140,8 +141,9 @@ public class Trainingsbuddy_Agents : Agent
                 dirToGo = transform.right * 0.75f;
                 break;
             case 6:
-                print("Shoooting from:");
-                print(gameObject.name);
+                //print("Shoooting from:");
+                //print(gameObject.name);
+
                 // SHOT!
                 Peng = true;
                 if (targetLocked)
@@ -151,7 +153,7 @@ public class Trainingsbuddy_Agents : Agent
                     //print(shotAgent.name);
                     //print("Winner:");
                     //print(gameObject.name);
-                    Done();
+                    //Done();
                 }
                 break;
             case 7:
@@ -165,23 +167,26 @@ public class Trainingsbuddy_Agents : Agent
 
     public override void AgentAction(float[] vectorAction, string textAction)
     {
-        // Object myReward
-        // Monitor.Log("Reward", , MonitorType.text , transform);
-        // Agent.GetCumulativeReward();
-        // print(Agent.GetReward());
+
+        // Monitoring
+        Monitor.Log("Reward", GetCumulativeReward(), MonitorType.text, this.transform);
+        // print(GetReward());
+        // print(GetCumulativeReward());
+
 
         MoveAgent(vectorAction);
 
         // Reward for shooting the target
         if (Peng && targetLocked)
         {
-            AddReward(1.0f);
+            AddReward(100.0f);
+            Done();
         }
 
         // Reward for finding Target
         if (targetLocked)
         {
-            AddReward(0.5f);
+            AddReward(0.01f);
         }
 
         // Penalty for every shot
@@ -190,13 +195,20 @@ public class Trainingsbuddy_Agents : Agent
             AddReward(-0.01f);
         }
 
-        if (gameObject.GetComponent<Renderer>().material == HitMaterial)
+        // When the Agent get hit
+        if (this.GetComponent<Renderer>().material.name == "Hit (Instance)")
         {
-            AddReward(-1.0f);
+            AddReward(-100.0f);
+            Done();
         }
 
         // Time Penalty
         AddReward(-0.01f);
+
+        // EndTime Penalty
+        // if(GetStepCount() == 5000){
+        //   AddReward(-100.0f);
+        // };
 
     }
 
