@@ -49,6 +49,7 @@ public class Trainingsbuddy_Agents : Agent
         {
             if (Target.gameObject.name == hitInfo.collider.gameObject.name)
             {
+                //print("TARGET LOCKED");
                 if (Peng)
                 {
                     Gun.GetComponent<Renderer>().material = GunFiredMaterial;
@@ -94,12 +95,12 @@ public class Trainingsbuddy_Agents : Agent
         AddVectorObs(rBody.transform.rotation);
 
         // Observe Distances to Walls & Tagets via Ray Casts
-        float rayDistance = 20f;
-        float[] rayAngles = { 0f, 45f, 90f, 135f, 180f, 110f, 70f };
-        string[] detectableObjects;
-        detectableObjects = new string[] { "ArenaWall", "PlayerTarget" };
-        AddVectorObs(rayPer.Perceive(rayDistance, rayAngles, detectableObjects, 0f, 0f));
-        AddVectorObs(rayPer.Perceive(rayDistance, rayAngles, detectableObjects, 1f, 0f));
+        //float rayDistance = 20f;
+        //float[] rayAngles = { 0f, 45f, 90f, 135f, 180f, 110f, 70f };
+        //string[] detectableObjects;
+        //detectableObjects = new string[] { "ArenaWall", "PlayerTarget" };
+        //AddVectorObs(rayPer.Perceive(rayDistance, rayAngles, detectableObjects, 0f, 0f));
+        //AddVectorObs(rayPer.Perceive(rayDistance, rayAngles, detectableObjects, 1f, 0f));
 
         // Observe Distance to Target
         Vector3 relativePosition = Target.position - this.transform.position;
@@ -109,7 +110,6 @@ public class Trainingsbuddy_Agents : Agent
         // Observe Target Position
         AddVectorObs(Target.position);
         AddVectorObs(Target.transform.rotation);
-
     }
 
 
@@ -179,31 +179,35 @@ public class Trainingsbuddy_Agents : Agent
         // Reward for shooting the target
         if (Peng && targetLocked)
         {
-            AddReward(100.0f);
+            AddReward(1.0f);
+            print("TB");
+            print(GetCumulativeReward());
             Done();
         }
 
         // Reward for finding Target
         if (targetLocked)
         {
-            AddReward(0.01f);
+            AddReward(0.001f);
         }
 
         // Penalty for every shot
         if (Peng)
         {
-            AddReward(-0.01f);
+            AddReward(-0.001f);
         }
 
         // When the Agent get hit
         if (this.GetComponent<Renderer>().material.name == "Hit (Instance)")
         {
-            AddReward(-100.0f);
+            print("TB Dead");
+            AddReward(-1.0f);
+            print(GetCumulativeReward());
             Done();
         }
 
         // Time Penalty
-        AddReward(-0.01f);
+        AddReward(-0.001f);
 
         // EndTime Penalty
         // if(GetStepCount() == 5000){
