@@ -9,7 +9,11 @@ Assets/AssetStoreTools*
 ML-Agents/
 
 #Builds 
-build_env/
+env/
+
+#Cache
+*.pyc
+__pycache__/
 
 ML-Agents.meta
 
