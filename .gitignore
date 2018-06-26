@@ -7,11 +7,13 @@ Assets/AssetStoreTools*
 
 # ML-Agent
 ML-Agents/
+ML-Agent/
 
 #Builds 
-env/
+models/
 
-#Cache
+#Train
+env/
 *.pyc
 __pycache__/
 

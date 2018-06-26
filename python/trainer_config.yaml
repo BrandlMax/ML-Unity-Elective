@@ -21,6 +21,17 @@ default:
     curiosity_strength: 0.01
     curiosity_enc_size: 128
 
+BrainAgent:
+    max_steps: 3.0e5
+    num_epoch: 3
+    time_horizon: 1000
+    batch_size: 2024
+    buffer_size: 20240
+    gamma: 0.995
+    summary_freq: 3000
+    num_layers: 3
+    hidden_units: 512
+
 BananaBrain:
     normalize: false
     batch_size: 1024
@@ -29,7 +40,7 @@ BananaBrain:
 
 BouncerBrain:
     normalize: true
-    max_steps: 5.0e5
+    max_steps: 1e5
     num_layers: 2
     hidden_units: 64
 
